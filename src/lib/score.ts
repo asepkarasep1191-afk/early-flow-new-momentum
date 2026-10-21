@@ -178,7 +178,7 @@ export function scorePair(p: PairRaw, socialBoost: number): ScoredCoin | null {
   if (mcap < 15_000 || mcap > 40_000_000) return null;
   if (liq < 6_000 || liq > 8_000_000) return null;
   if (vol24 < 20_000) return null;
-  if (chg24 > 120 || chg1 > 45) return null;
+  if (chg24 > 120 || chg1 > 45 || chg1 < -15) return null;
 
   const moved = [chg5, chg1, chg6, chg24].some((v) => Math.abs(v) >= 0.2);
   const buys1 = n(p.txns?.h1?.buys);
@@ -219,8 +219,9 @@ export function scorePair(p: PairRaw, socialBoost: number): ScoredCoin | null {
   const lowcapHeat =
     mcap <= 12_000_000 &&
     turnover >= 0.2 &&
+    chg1 > -8 &&
     chg24 < 55 &&
-    chg24 > -25 &&
+    chg24 > -20 &&
     (socialBoost > 0 || volLeadRatio >= 1.2);
 
   const signals: SignalId[] = [];
@@ -237,6 +238,7 @@ export function scorePair(p: PairRaw, socialBoost: number): ScoredCoin | null {
   if (lowcapHeat) score += 10 + Math.min(8, socialBoost);
   if (priceStillEarly) score += 6;
   if (chg24 < 8 && chg1 > 1) score += 6;
+  if (chg1 < -8) score -= 18;
   if (chg24 > 70) score -= 14;
   if (liq < 12_000) score -= 4;
   score = Math.max(1, Math.min(99, Math.round(score)));
